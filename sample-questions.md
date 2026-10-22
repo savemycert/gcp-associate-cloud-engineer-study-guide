@@ -8,11 +8,11 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Setting up a cloud solution environment*
 
-**A new cloud administrator is documenting how resources are organized in the company's Google Cloud environment. Which option correctly describes the Google Cloud resource hierarchy from the top level down?** Choose one.
+**A new administrator is drawing your company's Google Cloud resource hierarchy for an onboarding document. The company uses an organization node, folders for departments, and projects for workloads. Which ordering from the root down is correct?** Choose one.
 
-- **a.** Projects, then organization, then folders, then resources
-- **b.** Organization, then projects, then folders, then resources
-- **c.** Folders, then organization, then projects, then resources
+- **a.** Folders, then organization, then projects, then resources
+- **b.** Projects, then organization, then folders, then resources
+- **c.** Organization, then projects, then folders, then resources
 - **d.** Organization, then folders, then projects, then resources
 
 <details>
@@ -20,22 +20,23 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 **Answer: d**
 
-- **a** ❌ Projects are a middle layer that hold resources; they cannot contain the organization node, which is always the top of the hierarchy.
-- **b** ❌ Folders sit between the organization and projects, not beneath projects. A project can never contain a folder.
-- **c** ❌ The organization node is always the root of the hierarchy. Folders can only exist beneath an organization, never above it.
-- **d** ✅ Correct. The organization node is the root, folders provide optional grouping beneath it, projects sit inside folders (or directly under the organization), and individual resources such as VMs and buckets belong to projects.
+- **a** ❌ The organization node is the root of the hierarchy. Folders are created beneath an organization, never above it.
+- **b** ❌ A project cannot be the parent of an organization. Projects are children of a folder or of the organization node itself.
+- **c** ❌ Projects cannot contain folders. Folders sit between the organization and projects, and a project only contains service resources.
+- **d** ✅ The organization is the root, folders group projects beneath it, projects sit in a folder or directly under the organization, and every VM, bucket or database belongs to exactly one project.
 
-**The concept.** The Google Cloud resource hierarchy defines how resources are grouped and how IAM policies and organization policies flow downward. Its layers, from top to bottom, are the organization node, folders, projects, and finally the service resources themselves.
+**The concept.** The Google Cloud resource hierarchy is a tree managed by Resource Manager: one organization node at the root, optional (and nestable) folders, projects, and the service resources inside projects. IAM allow policies and organization policies attached to a node are inherited by everything below it.
 
-**Why this is correct.** Option (a) is the only ordering that matches Resource Manager's model: the organization is the root, folders provide optional intermediate grouping (for departments, teams, or environments), every resource must belong to exactly one project, and projects attach to a folder or directly to the organization. Options (b) and (d) invert the folder/project relationship — projects can never contain folders. Option (c) places folders above the organization, which is impossible because the organization node is always the root of the hierarchy.
+**Why this is correct.** Only the organization-folders-projects-resources ordering matches the model. The organization node is always the root; folders give optional intermediate grouping for departments or environments; each resource belongs to one project; and a project is parented by a folder or by the organization. The other orderings either put folders under projects, which is impossible, or place something above the organization node.
 
 **How to reason it out**
 
-1. Remember the hierarchy top-down: organization, folders, projects, resources.
-2. Note that folders are optional and can be nested, but projects and the organization node are not optional in an enterprise setup.
-3. Recall that IAM allow policies set at a higher level are inherited by everything beneath that level, which is why the ordering matters on the exam.
+1. Identify the root: the organization node, created from a Cloud Identity or Google Workspace domain.
+2. Place folders as the optional grouping layer beneath it (folders can nest).
+3. Place projects under folders or directly under the organization.
+4. Remember that every service resource lives inside exactly one project.
 
-> **Exam tip:** The hierarchy is organization, folders, projects, resources — and policies inherit downward through it.
+> **Exam tip:** Organization > folders > projects > resources, and policies inherit downward along that path.
 
 </details>
 
@@ -47,34 +48,35 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Setting up a cloud solution environment*
 
-**Your data engineering team of 15 people needs the BigQuery Data Editor role on all 12 projects inside the "analytics" folder. Team membership changes monthly. Following Google-recommended practices, what is the MOST appropriate way to grant this access?** Choose one.
+**Your 15-person data engineering team needs the BigQuery Data Editor role on every project in the analytics folder, which has 12 projects today and gets new projects every quarter. Team membership changes monthly. You want the fewest IAM changes over time. What should you do?** Choose one.
 
-- **a.** Grant the BigQuery Data Editor role to the group at the organization level
-- **b.** Grant the BigQuery Data Editor role to a Google group containing the team, on the "analytics" folder
-- **c.** Create a single shared user account for the team and grant it the role on the folder
-- **d.** Grant the BigQuery Data Editor role to each engineer individually on each of the 12 projects
+- **a.** Grant the role to the team's Google group on each of the 12 projects
+- **b.** Grant the role to the team's Google group on the analytics folder
+- **c.** Grant the role to the team's Google group on the organization node
+- **d.** Grant the role to each engineer on each project in the analytics folder
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: b**
 
-- **a** ❌ An organization-level grant is inherited by every project in the company, not just the analytics folder — it violates least privilege by over-scoping the access.
-- **b** ✅ Correct. Granting the role to a group at the folder level means all 12 projects inherit the binding, and joiners/leavers are handled by editing group membership instead of touching IAM policies.
-- **c** ❌ Shared accounts destroy audit accountability and violate Google's identity best practices; every person should authenticate with their own identity.
-- **d** ❌ This creates 180 individual bindings that must be updated every time the team changes, which is error-prone and against Google's recommendation to grant roles to groups.
+- **a** ❌ Membership changes are handled by the group, but every new project added to the folder needs another binding, so access drifts as the folder grows.
+- **b** ✅ One binding on the folder is inherited by every current and future project in it, and joiners or leavers are handled by editing group membership rather than IAM policies.
+- **c** ❌ Inheritance would cover the analytics projects, but it also grants BigQuery Data Editor on every other project in the company, which breaks least privilege.
+- **d** ❌ This creates one binding per person per project and must be edited for every joiner, leaver and new project, which is the most IAM maintenance of all the choices.
 
-**The concept.** Two Google-recommended practices combine here: grant IAM roles to Google groups rather than individual users, and grant roles at the highest level of the hierarchy where they legitimately apply so inheritance does the fan-out for you.
+**The concept.** Two practices combine here: bind roles to groups rather than individual users, and attach the binding at the lowest hierarchy node that covers all the resources that need it. Folder-level bindings are inherited by every project in the folder, including projects created later.
 
-**Why this is correct.** A single binding of BigQuery Data Editor to the team's group on the "analytics" folder is inherited by all 12 projects beneath it, and monthly membership churn becomes a group-membership edit rather than an IAM change. Individual per-project grants (b) multiply the maintenance burden and risk drift. An organization-level grant (c) leaks the role into every unrelated project, violating least privilege. A shared account (d) removes individual accountability from Cloud Audit Logs and is explicitly discouraged.
+**Why this is correct.** A single group binding on the analytics folder satisfies both moving parts: people change through group membership, and new projects inherit the folder binding automatically. Per-project group grants handle people but not new projects; an organization-level grant handles both but over-scopes access to every project; per-user grants handle neither.
 
 **How to reason it out**
 
-1. Create or reuse a Google group in Cloud Identity that represents the data engineering team.
-2. Add a single IAM binding on the "analytics" folder granting roles/bigquery.dataEditor to that group.
-3. Manage joiners and leavers through group membership; the IAM policy never needs to change.
+1. List what changes over time: team members and the number of projects.
+2. Group-based binding absorbs membership changes without IAM edits.
+3. A folder-level binding absorbs new projects through inheritance.
+4. Reject the organization node because it grants access beyond the analytics folder.
 
-> **Exam tip:** Grant roles to groups at the folder level and let inheritance and group membership do the ongoing work.
+> **Exam tip:** Group plus the lowest common ancestor folder: people change in the group, projects inherit from the folder.
 
 </details>
 
@@ -86,34 +88,35 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Setting up a cloud solution environment*
 
-**A security auditor was granted the Viewer role at the organization level. The owners of one sensitive project want to prevent the auditor from viewing that specific project while leaving access to all other projects intact. What should you tell them?** Choose one.
+**A security auditor holds the Viewer role on the organization node and must keep it for every project except one sensitive project, which the auditor must no longer be able to read. The organization grant is managed by a central team and must not be changed. What should you do?** Choose one.
 
-- **a.** Remove the auditor's binding from the sensitive project's IAM policy
-- **b.** Inherited roles cannot be revoked at a lower level; the organization-level grant itself must be changed or rescoped
-- **c.** Add a deny entry for the auditor in the project's allow policy
-- **d.** Create an organization policy constraint on the project that blocks the auditor's access
+- **a.** Add a deny binding for the auditor to the sensitive project's allow policy
+- **b.** Attach an IAM deny policy to the project denying the auditor's read permissions
+- **c.** Remove the auditor's Viewer binding from the sensitive project's allow policy
+- **d.** Set an organization policy constraint on the project that restricts the auditor
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: b**
 
-- **a** ❌ The binding does not exist on the project — it exists at the organization level. There is nothing on the project's own policy to remove, and inherited access remains.
-- **b** ✅ Correct. IAM allow policies are additive: the effective policy is the union of the resource's policy and everything inherited. A child resource cannot subtract an ancestor's grant, so the fix must happen where the grant was made.
-- **c** ❌ Allow policies have no deny entries. Denials require a separate mechanism, and the standard ACE-level answer is that allow policies are additive and allow-only.
-- **d** ❌ Organization policy constraints restrict what configurations are allowed (for example, blocking external IPs); they do not remove a specific principal's IAM access.
+- **a** ❌ Allow policies only contain role bindings that grant access. Denials are expressed in a separate IAM deny policy, not as an entry in the allow policy.
+- **b** ✅ Deny policies can be attached to a project and are evaluated before allow policies, so denying the auditor's read permissions there blocks the inherited Viewer access on that project only.
+- **c** ❌ The Viewer binding is not on the project's allow policy; it is inherited from the organization node, so there is nothing on the project to remove and the inherited access continues.
+- **d** ❌ Organization policy constraints restrict resource configurations such as locations or external IPs. They do not take permissions away from a specific principal.
 
-**The concept.** IAM allow policies in Google Cloud are additive and allow-only. A resource's effective policy is the union of the policy set directly on it and the policies inherited from its ancestors — a lower level can add access but never take inherited access away.
+**The concept.** IAM allow policies are additive: the effective allow policy on a project is the union of its own bindings and every inherited binding, so nothing in a child allow policy can subtract an ancestor's grant. IAM deny policies are a separate policy type that can be attached to an organization, folder or project; IAM checks deny policies before allow policies.
 
-**Why this is correct.** Because the Viewer grant lives at the organization level, it flows down to every project, including the sensitive one. Option (b) is right: the only clean fixes are to change the grant at its source — for example, remove the org-level binding and instead grant Viewer on the folders or projects the auditor actually needs. Option (a) fails because there is no project-level binding to remove. Option (c) confuses organization policy (configuration guardrails) with IAM (who can do what). Option (d) invents deny entries inside allow policies, which do not exist.
+**Why this is correct.** With the organization grant off-limits, the only way to remove access on one project is a deny policy attached to that project that names the auditor and the read permissions to block (permission groups such as all get or list permissions of a service are supported). Removing a project binding fails because the grant is inherited, an allow policy has no deny entries, and organization policy constraints govern configurations rather than principals.
 
 **How to reason it out**
 
-1. Identify where the binding was made — here, on the organization node.
-2. Recall that inheritance is additive: child policies cannot subtract ancestor grants.
-3. Rescope the grant: remove the org-level Viewer binding and re-grant it on the specific folders or projects that should be visible.
+1. Locate the grant: it is inherited from the organization node, not set on the project.
+2. Recall that allow policies only add access, so a child allow policy cannot revoke it.
+3. Recall that deny policies are a separate policy type attachable at the project and checked first.
+4. Discard organization policy constraints, which do not target principals.
 
-> **Exam tip:** You cannot revoke an inherited role at a lower level — fix the grant where it was made.
+> **Exam tip:** Allow policies only add; to carve an exception out of an inherited grant, attach an IAM deny policy lower down.
 
 </details>
 
@@ -125,32 +128,33 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Setting up a cloud solution environment*
 
-**A new administrator is learning how Cloud Billing accounts relate to projects. Which statement correctly describes the relationship?** Choose one.
+**A startup runs a dev project and a prod project, both paid by one Cloud Billing account. A new data team asks whether their upcoming analytics project can also use that account, and how charges flow. Which statement describes the relationship correctly?** Choose one.
 
-- **a.** A project can split its charges across several billing accounts simultaneously
-- **b.** Billing accounts are created inside a project and deleted along with it
-- **c.** Each project must have its own dedicated billing account
-- **d.** One billing account can pay for many projects, but each project is linked to at most one billing account at a time
+- **a.** The analytics project can link to several billing accounts and split its charges
+- **b.** Each project needs a dedicated billing account, so the team creates a new one
+- **c.** The billing account lives inside the prod project and is deleted along with it
+- **d.** One billing account can pay for many projects; each project links to one at a time
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: d**
 
-- **a** ❌ A project's usage always charges to the single billing account it is linked to; cost splitting is done through reporting and exports, not multiple links.
-- **b** ❌ A billing account is an independent resource associated with the organization and a payments profile — it exists outside any project and survives project deletion.
-- **c** ❌ Billing accounts are designed to be shared — most organizations fund many projects from a small number of billing accounts.
-- **d** ✅ Correct. Billing accounts and projects have a one-to-many relationship: a billing account funds any number of projects, while a project charges to exactly one billing account (or none, if billing is disabled).
+- **a** ❌ A project is linked to at most one billing account at a time; cost splitting between teams is done with labels, reports and exports, not multiple links.
+- **b** ❌ Billing accounts are built to be shared: one account routinely pays for many projects, so a new project does not need its own account.
+- **c** ❌ A billing account is a standalone resource with its own IAM policy and payments profile; it is not created inside a project and survives project deletion.
+- **d** ✅ Correct. The relationship is one-to-many: the shared account can fund the analytics project too, and that project charges to exactly one billing account (or none if billing is disabled).
 
-**The concept.** A Cloud Billing account is a standalone resource that defines who pays (via its payments profile). Projects link to a billing account to run paid services: one billing account to many projects, each project to at most one billing account at a time.
+**The concept.** A Cloud Billing account is a standalone resource that defines who pays (through its payments profile). Projects link to a billing account to use paid services: one billing account to many projects, each project to at most one billing account at a time.
 
-**Why this is correct.** Option (a) states the one-to-many model exactly. Option (b) inverts common practice — dedicated per-project billing accounts would multiply administrative overhead for no benefit. Option (c) is impossible: charges flow to the single linked billing account, and any cost allocation across teams is a reporting exercise (labels, BigQuery export), not a linking feature. Option (d) misplaces the billing account in the hierarchy: it is not a project resource, and unlinking or deleting a project does not touch the billing account itself.
+**Why this is correct.** The shared account can fund the new analytics project because the billing-account-to-project relationship is one-to-many. A dedicated account per project is unnecessary overhead; a project cannot split charges across several accounts (allocation is done with labels and the BigQuery export); and a billing account is not a project-owned resource, so deleting a project never deletes it.
 
 **How to reason it out**
 
-1. Remember the cardinality: billing account to projects is one-to-many; project to billing account is at most one.
-2. Treat the billing account as an organization-level resource with its own IAM policy and payments profile.
-3. Use labels and billing export for cost breakdowns rather than expecting multiple billing links per project.
+1. Recall the cardinality: billing account to projects is one-to-many.
+2. Recall the reverse: a project charges to at most one billing account at a time.
+3. Remember the billing account sits outside projects, with its own IAM policy.
+4. Use labels and exports, not multiple links, to divide costs between teams.
 
 > **Exam tip:** One billing account funds many projects; each project links to at most one billing account.
 
@@ -164,34 +168,35 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Setting up a cloud solution environment*
 
-**Your compliance team requires that no Compute Engine VM anywhere in the company can be created with an external IP address, regardless of which IAM roles the creator holds. What is the MOST appropriate mechanism?** Choose one.
+**Your compliance team requires that no Compute Engine VM in the company can be given an external IP address, including VMs in projects created next year, and including VMs created by project Owners. You want a single control with the least ongoing effort. What should you do?** Choose one.
 
-- **a.** Remove the Compute Admin role from all users and grant a custom role without the external IP permission
-- **b.** Configure a firewall rule in every VPC that blocks inbound traffic from the internet
-- **c.** Apply the compute.vmExternalIpAccess organization policy constraint at the organization level
-- **d.** Set a budget alert so administrators are notified when VMs with external IPs are created
+- **a.** Set the compute.vmExternalIpAccess constraint to deny all on each existing project
+- **b.** Set the compute.restrictVpcPeering constraint to deny all on the organization node
+- **c.** Set the compute.vmExternalIpAccess constraint to deny all on the organization node
+- **d.** Create a hierarchical firewall policy on the organization that denies ingress from 0.0.0.0/0
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: c**
 
-- **a** ❌ IAM controls who can act, not what configurations are valid. Role surgery is fragile, hard to maintain across every current and future project, and there is no single permission that maps cleanly to "assign external IP".
-- **b** ❌ Firewall rules filter traffic to VMs; they do not prevent an external IP from being assigned in the first place, which is what the requirement demands.
-- **c** ✅ Correct. Organization policy constraints are configuration guardrails that apply no matter what IAM permissions a user has, and setting the constraint at the organization node covers every project.
-- **d** ❌ Budgets monitor spend, not network configuration, and alerts are reactive notifications — they cannot prevent anything.
+- **a** ❌ This is the right constraint at the wrong scope. Projects created next year would not have it, so someone must remember to repeat it on every new project.
+- **b** ❌ This is a real constraint at the right scope, but it controls VPC Network Peering, not whether VMs can have external IP addresses.
+- **c** ✅ The list constraint governs which VMs may have external IPs, applies regardless of the creator's IAM roles, and is inherited by every current and future project under the organization.
+- **d** ❌ Firewall rules filter traffic. A VM could still be created with an external IP address, which is what the requirement forbids.
 
-**The concept.** Organization policies and IAM answer different questions. IAM decides who can perform actions; organization policy constraints decide what resource configurations are allowed at all, and they bind everyone — even project owners — throughout the subtree where they are set.
+**The concept.** Organization policy constraints restrict what configurations are allowed, no matter which IAM roles the actor holds, and they are inherited down the hierarchy from where they are set. The compute.vmExternalIpAccess list constraint defines which VM instances (if any) may use external IP addresses.
 
-**Why this is correct.** The requirement is a configuration guardrail that must hold "regardless of IAM roles," which is the textbook use case for an organization policy constraint. Applying compute.vmExternalIpAccess (set to deny all) at the organization node enforces it everywhere, including future projects. Option (b) tries to encode a configuration rule in IAM, which cannot express it reliably and must be repeated for every principal. Option (c) restricts traffic after the fact but leaves the external IP assignable. Option (d) is monitoring, not prevention.
+**Why this is correct.** Setting compute.vmExternalIpAccess to deny all on the organization node meets every requirement at once: it blocks external IPs even for Owners, and new projects inherit it automatically. Applying it per project gives the right behaviour only until the next project appears; a hierarchical firewall policy blocks traffic but still lets the IP be assigned; compute.restrictVpcPeering is a real organization-level constraint that governs a different feature.
 
 **How to reason it out**
 
-1. Recognize "must hold regardless of who or which role" as an organization policy requirement, not an IAM one.
-2. Choose the matching constraint — compute.vmExternalIpAccess — and configure it to deny all external IPs.
-3. Set the constraint at the organization node so every current and future folder and project inherits it.
+1. Recognise a configuration guardrail that must hold regardless of IAM roles: an organization policy.
+2. Pick the constraint that governs external IPs on VMs: compute.vmExternalIpAccess.
+3. Pick the scope that covers future projects: the organization node.
+4. Reject controls that act on traffic rather than on the configuration.
 
-> **Exam tip:** Use organization policy constraints for what can be configured; use IAM for who can act.
+> **Exam tip:** Guardrails for every project, now and later, go on the organization node as an organization policy constraint.
 
 </details>
 
@@ -203,34 +208,35 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Planning and implementing a cloud solution*
 
-**A startup is deploying a stateless, containerized REST API. Traffic is bursty and unpredictable, and the service is sometimes idle for hours at a time. The team wants a fully managed platform that scales to zero when idle and requires the LEAST operational overhead. Which compute option should they choose?** Choose one.
+**Your team is deploying a stateless REST API that is already packaged as a container image. Traffic is bursty, and the API often receives no requests for several hours overnight. The team does not want to manage nodes or VMs, and compute charges should stop while no requests arrive. What should you do?** Choose one.
 
-- **a.** A managed instance group of Compute Engine VMs
-- **b.** Cloud Run
-- **c.** A GKE Standard cluster
-- **d.** A single Compute Engine VM with the container installed
+- **a.** Deploy the container to a GKE Autopilot cluster.
+- **b.** Deploy the container as a Cloud Run service.
+- **c.** Deploy the container to a GKE Standard cluster.
+- **d.** Deploy the container to a managed instance group.
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: b**
 
-- **a** ❌ A managed instance group can autoscale, but it cannot scale to zero for a serving workload behind a load balancer without downtime, and the team must maintain images, patching, and instance templates.
-- **b** ✅ Cloud Run runs stateless containers on a fully managed platform, autoscales with request traffic, and scales to zero when idle, so the team pays nothing during idle hours and manages no infrastructure.
-- **c** ❌ GKE Standard requires the team to provision and manage node pools, and the cluster's nodes keep billing even when the API is idle, so it neither scales to zero nor minimizes operations.
-- **d** ❌ A single VM bills continuously whether or not requests arrive, provides no autoscaling, and puts OS patching and availability entirely on the team.
+- **a** ❌ Autopilot removes node management, but the cluster carries a management fee and the Deployment's Pods keep running and billing while idle, so charges do not stop overnight.
+- **b** ✅ Cloud Run runs stateless containers with no nodes or VMs to manage, autoscales on request traffic and scales to zero instances when idle, so there are no instance charges overnight.
+- **c** ❌ GKE Standard leaves node pools for the team to size, patch and pay for, and the nodes keep billing overnight even when no requests arrive.
+- **d** ❌ A managed instance group runs VMs the team must image and patch, and the running VMs bill whether or not the API is serving requests.
 
-**The concept.** Compute selection on Google Cloud maps workload characteristics to the platform that manages the most for you: Cloud Run for stateless request-driven containers, GKE for orchestrated container fleets you control, and Compute Engine when you need the VM itself.
+**The concept.** Compute selection maps workload shape to the platform that manages the most for you: Cloud Run for stateless request-driven containers, GKE for orchestrated container fleets, Compute Engine when you need the VM itself.
 
-**Why this is correct.** The workload is stateless, containerized, and request-driven with long idle periods - exactly the Cloud Run profile. Cloud Run bills per use, scales from zero to many instances automatically, and removes all node and OS management. GKE and Compute Engine both leave always-on infrastructure and operational tasks with the team, which contradicts the least-operational-overhead and scale-to-zero requirements.
+**Why this is correct.** The API is stateless, already containerized and request-driven with long idle periods, and the team wants no nodes and no idle charges: that is the Cloud Run profile, because Cloud Run scales to zero instances. GKE Autopilot is the tempting near-twin since it also hides nodes, but the cluster fee and the running Pods keep billing while idle. GKE Standard and managed instance groups add node or VM management on top of idle charges.
 
 **How to reason it out**
 
-1. Identify the workload shape: stateless container, HTTP-driven, bursty traffic, long idle periods.
-2. Match scale-to-zero plus fully managed requirements to serverless container platforms, which on Google Cloud means Cloud Run.
-3. Eliminate GKE and Compute Engine options because both keep billable infrastructure running while idle and require node or VM management.
+1. Note the workload shape: stateless container, HTTP requests, bursty, idle for hours.
+2. Apply the two constraints: no node or VM management, and no charges while idle.
+3. Eliminate options that keep billable infrastructure running while idle (both GKE modes, managed instance groups).
+4. Choose Cloud Run, which scales to zero.
 
-> **Exam tip:** Stateless container plus bursty traffic plus minimal ops equals Cloud Run - it is the only listed option that scales to zero.
+> **Exam tip:** Stateless container + no infrastructure to manage + nothing to pay while idle = Cloud Run; Autopilot hides nodes but does not stop billing when idle.
 
 </details>
 
@@ -242,34 +248,34 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Planning and implementing a cloud solution*
 
-**A company is migrating a legacy application that depends on a specific Linux kernel module, requires full root access to the operating system, and cannot be containerized without a major rewrite. Which Google Cloud compute option should the company use?** Choose one.
+**Your company is migrating an on-premises inventory application to Google Cloud. The application loads a proprietary Linux kernel module at boot, its installer needs root access to the operating system, and the software vendor does not support running it in containers. Where should you run the application?** Choose one.
 
-- **a.** GKE Autopilot
-- **b.** Cloud Run
-- **c.** Cloud Run functions
-- **d.** Compute Engine
+- **a.** On GKE Standard, using privileged Pods on the nodes
+- **b.** On Cloud Run, using a custom container base image
+- **c.** On GKE Autopilot, using a DaemonSet on the nodes
+- **d.** On Compute Engine VMs, using a custom image
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: d**
 
-- **a** ❌ GKE Autopilot requires containerized workloads and blocks privileged access to nodes; Google manages the node OS, so custom kernel modules cannot be installed.
-- **b** ❌ Cloud Run runs containers on a managed runtime; you cannot load custom kernel modules or control the host operating system, and the app is not containerized.
-- **c** ❌ Cloud Run functions execute event-driven code snippets in a managed runtime with no OS-level access, which cannot host a full legacy application with kernel dependencies.
-- **d** ✅ Compute Engine provides full virtual machines where you control the OS image, kernel modules, and root access, which is exactly what a non-containerizable legacy application needs.
+- **a** ❌ Privileged Pods on Standard nodes could touch the node kernel, but this is still a containerized deployment, which the vendor does not support.
+- **b** ❌ Cloud Run runs containers in a managed sandbox with no access to the host kernel, and the vendor does not support containers at all.
+- **c** ❌ Autopilot manages the node OS and restricts privileged workloads, and it also requires containers, which the vendor does not support.
+- **d** ✅ Compute Engine gives you the whole VM: you choose the OS image, have root access and can load kernel modules, which is what an uncontainerizable application with kernel dependencies needs.
 
-**The concept.** When a workload needs OS-level control - custom kernels, kernel modules, licensed OS images, or root access - infrastructure-as-a-service (Compute Engine) is the right layer; container and serverless platforms deliberately abstract the OS away.
+**The concept.** When a workload needs OS-level control (kernel modules, root access, a specific OS image) or cannot be containerized, Compute Engine is the layer to use; container and serverless platforms deliberately abstract the OS away.
 
-**Why this is correct.** Only Compute Engine gives the team its own VM with a chosen OS image, root access, and the ability to load kernel modules. Cloud Run and Cloud Run functions run managed runtimes with no host access, and GKE Autopilot manages the node OS for you and requires containers, so none of them can satisfy the kernel-module dependency.
+**Why this is correct.** Only Compute Engine lets the team own the guest OS end to end: custom image, root access and kernel modules. GKE Standard with privileged Pods is the tempting option because it can reach the node kernel, but it is still a container deployment, which the vendor does not support. Cloud Run and Autopilot manage the host for you and require containers.
 
 **How to reason it out**
 
-1. List the hard requirements: custom kernel module, root OS access, no containerization.
-2. Recognize that every serverless and Autopilot option abstracts away the operating system, failing those requirements.
-3. Choose Compute Engine, the IaaS layer where you own the guest OS end to end.
+1. List the hard requirements: kernel module, root access, no containers.
+2. Eliminate every container platform because the vendor forbids containers.
+3. Choose Compute Engine, where you control the guest OS.
 
-> **Exam tip:** Kernel or OS-level requirements always point to Compute Engine - managed container platforms never expose the host OS.
+> **Exam tip:** Kernel or OS-level requirements plus no-container support point to Compute Engine VMs.
 
 </details>
 
@@ -281,34 +287,35 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Planning and implementing a cloud solution*
 
-**A regional e-commerce web application needs a fully managed relational database for orders and inventory. The team uses MySQL, requires ACID transactions, and wants automated backups and patching without managing database servers. Which service should they choose?** Choose one.
+**Your team is moving a regional order-management application from an on-premises MySQL 8.0 server to Google Cloud. The 300 GB database needs ACID transactions and must survive the loss of a zone, and the team no longer wants to handle OS patching, backups or replication itself. All users are in one region. What should you do?** Choose one.
 
-- **a.** Bigtable
-- **b.** Memorystore for Redis
-- **c.** Cloud SQL for MySQL
-- **d.** BigQuery
+- **a.** Deploy an AlloyDB for PostgreSQL cluster in the region
+- **b.** Deploy a Spanner instance in a regional configuration
+- **c.** Deploy a Cloud SQL for MySQL instance with regional HA
+- **d.** Deploy a self-managed MySQL server on a Compute Engine VM
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: c**
 
-- **a** ❌ Bigtable is a wide-column NoSQL store with no SQL joins or multi-row ACID transactions in the relational sense - wrong model for an orders-and-inventory schema built on MySQL.
-- **b** ❌ Memorystore is an in-memory cache; it is not a durable system of record and offers no relational schema or transactional guarantees for order data.
-- **c** ✅ Cloud SQL is Google Cloud's managed relational database for MySQL, PostgreSQL, and SQL Server - it provides ACID transactions, automated backups, patching, and high availability for regional applications.
-- **d** ❌ BigQuery is an analytics warehouse optimized for scanning large datasets, not for the high-frequency, low-latency transactional reads and writes an order system performs.
+- **a** ❌ AlloyDB is managed and highly available, but it is PostgreSQL-compatible only. Moving a MySQL application onto it means converting the schema and queries, which the scenario gives no reason to do.
+- **b** ❌ Spanner would run the workload, but it is not MySQL: the application and schema would have to be migrated to a different SQL dialect, and Spanner is priced for horizontal scale this 300 GB regional database does not need.
+- **c** ✅ Cloud SQL for MySQL keeps the engine, handles patching and automated backups, and regional availability adds a synchronous standby in a second zone with automatic failover, covering the zone-loss requirement.
+- **d** ❌ This keeps MySQL compatibility but leaves patching, backups and replication with the team, which is exactly the operational work they want to stop doing.
 
-**The concept.** Cloud SQL is the default choice for regional, MySQL- or PostgreSQL-compatible OLTP workloads: managed relational databases with transactions, backups, replicas, and maintenance handled by Google.
+**The concept.** Cloud SQL is the managed relational service for regional MySQL, PostgreSQL and SQL Server workloads: Google runs patching, backups and replication, and the REGIONAL availability type adds a standby in another zone of the same region.
 
-**Why this is correct.** Every signal in the scenario - relational schema, MySQL compatibility, ACID transactions, regional scope, managed operations - maps to Cloud SQL. Bigtable and BigQuery serve NoSQL time-series and analytics needs respectively, and Memorystore is a cache layer, not a system of record.
+**Why this is correct.** Three constraints decide it: the engine stays MySQL, the scope is one region, and operations must be managed. Cloud SQL for MySQL with regional HA meets all three. Spanner and AlloyDB are managed and resilient but force a change of database engine, and Spanner is the over-engineered choice for a 300 GB regional database. A MySQL VM keeps the engine but fails the managed-operations requirement.
 
 **How to reason it out**
 
-1. Classify the workload: relational OLTP with an existing MySQL engine dependency.
-2. Check the scope: a single-region application, so global distribution (Spanner) is not required.
-3. Choose Cloud SQL for MySQL and enable automated backups and high availability as needed.
+1. Note the engine dependency: the application speaks MySQL.
+2. Note the scope: one region, modest size, so global scale-out is not needed.
+3. Note the operations constraint: patching, backups and replication must be managed by Google.
+4. Choose Cloud SQL for MySQL and set --availability-type=REGIONAL so a zonal failure triggers automatic failover.
 
-> **Exam tip:** Regional relational OLTP with MySQL or PostgreSQL compatibility is Cloud SQL territory.
+> **Exam tip:** Regional relational OLTP that must keep MySQL or PostgreSQL and drop server management is Cloud SQL; regional HA covers zone loss.
 
 </details>
 
@@ -320,35 +327,35 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Planning and implementing a cloud solution*
 
-**Your organization is designing a new VPC network for a production workload that will run in three specific regions. The network team must have full control over subnet IP ranges because the on-premises network already uses 10.128.0.0/9 and address overlap must be avoided. What should you do?** Choose one.
+**Your organization is designing a VPC network for a production workload that will run in three specific regions. The on-premises network already uses 10.128.0.0/9 and will later connect to the VPC over Cloud VPN, so no subnet range may overlap it. The network team also wants subnets only in the regions where workloads run. What should you do?** Choose one.
 
-- **a.** Create a custom mode VPC and manually define subnets with non-overlapping CIDR ranges in the three required regions.
-- **b.** Create three separate auto mode VPCs, one for each region.
-- **c.** Create an auto mode VPC so that subnets are provisioned automatically in every region.
-- **d.** Use the default network that Google Cloud creates in every new project.
+- **a.** Create a custom mode VPC network and add subnets in the three regions from a non-overlapping range.
+- **b.** Use the project's default network and add firewall rules that block the overlapping 10.128.0.0/9 range.
+- **c.** Create an auto mode VPC network and delete the subnets in regions the workload does not use.
+- **d.** Create an auto mode VPC network, convert it to custom mode, then add subnets in the three regions.
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: a**
 
-- **a** ✅ Custom mode gives you complete control over which regions get subnets and which CIDR ranges they use, so you can avoid the 10.128.0.0/9 on-premises space entirely.
-- **b** ❌ VPC networks are global resources, and each auto mode VPC would still create subnets in every region from the overlapping 10.128.0.0/9 range.
-- **c** ❌ Auto mode VPCs allocate their subnet ranges from 10.128.0.0/9, which directly overlaps the on-premises address space and would break hybrid routing.
-- **d** ❌ The default network is an auto mode VPC, so its subnets also come from 10.128.0.0/9 and would overlap the on-premises ranges.
+- **a** ✅ Custom mode starts with no subnets, so the team chooses both the regions and CIDR ranges and can stay clear of 10.128.0.0/9.
+- **b** ❌ The default network is an auto mode network. Firewall rules filter traffic; they do not remove overlapping subnet routes, so hybrid routing would still conflict.
+- **c** ❌ Auto mode subnets are allocated from 10.128.0.0/9, so the remaining subnets still overlap the on-premises range; auto-created subnets also cannot be deleted until the network is converted to custom mode.
+- **d** ❌ Converting to custom mode keeps the subnets auto mode already created from 10.128.0.0/9, so the overlap and the unwanted regions remain.
 
-**The concept.** Google Cloud VPCs come in two subnet creation modes: auto mode, which automatically creates one subnet per region from the predefined 10.128.0.0/9 block, and custom mode, which creates no subnets until you define them yourself.
+**The concept.** A VPC network is created in auto mode, which creates one subnet per region from the fixed 10.128.0.0/9 block, or in custom mode, which creates no subnets until you define them.
 
-**Why this is correct.** Because the on-premises network already occupies 10.128.0.0/9, any auto mode network (including the default network) would produce overlapping routes that make hybrid connectivity unreliable. A custom mode VPC starts empty, letting the network team place subnets only in the three required regions and assign CIDR ranges that do not collide with on-premises space. Google's own guidance is to use custom mode for production networks precisely because of this control.
+**Why this is correct.** The on-premises network already uses 10.128.0.0/9, which is exactly the block auto mode draws from, so any auto mode network (including the default network) produces overlapping routes once Cloud VPN connects the two sides. A custom mode network starts empty, so the team adds subnets only in the three regions and picks ranges outside the on-premises space. Converting an auto mode network to custom mode is a one-way change, but it keeps the subnets that were already created, so it does not fix the overlap. Firewall rules cannot fix an addressing conflict because they filter packets rather than change routes.
 
 **How to reason it out**
 
-1. Identify the address space already in use on-premises (here, 10.128.0.0/9).
-2. Create a custom mode VPC, which starts with no subnets.
-3. Define one subnet per required region with a CIDR range outside the reserved on-premises space.
-4. Document the IP plan so future subnets and peered networks also avoid overlap.
+1. Note the address space already used on premises (10.128.0.0/9).
+2. Recognise that auto mode and the default network allocate subnets from that same block.
+3. Create a custom mode network, which starts with no subnets.
+4. Add one subnet per required region from a range that does not overlap on-premises or other connected networks.
 
-> **Exam tip:** Use custom mode VPCs for production; auto mode's fixed 10.128.0.0/9 ranges frequently collide with on-premises networks.
+> **Exam tip:** Production and hybrid networks use custom mode VPCs; auto mode's 10.128.0.0/9 subnets often collide with other networks.
 
 </details>
 
@@ -360,35 +367,35 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Planning and implementing a cloud solution*
 
-**A new team member clones a repository containing Terraform configuration for Google Cloud and immediately runs terraform plan. The command fails with an error stating that required provider plugins are not installed. What should they run first?** Choose one.
+**A teammate added a google-beta provider block and a resource that uses a preview feature to your team's Terraform configuration. You pull the change into your existing clone and run terraform plan, which fails before it reads any infrastructure because the google-beta provider is not available locally. What should you do?** Choose one.
 
-- **a.** terraform apply -auto-approve
-- **b.** terraform init
-- **c.** gcloud auth application-default login
-- **d.** terraform validate
+- **a.** Run terraform validate to check the new blocks, then rerun terraform plan.
+- **b.** Run terraform init in the clone's root, then rerun terraform plan.
+- **c.** Run gcloud auth application-default login, then rerun terraform plan.
+- **d.** Run terraform refresh to update state, then rerun terraform plan.
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: b**
 
-- **a** ❌ apply depends on the same initialized providers and backend as plan, so it fails with the identical error until init has been run.
-- **b** ✅ terraform init initializes the working directory: it downloads the required providers (such as the google provider) and configures the backend, and it must run before plan or apply in a fresh checkout.
-- **c** ❌ Setting up Application Default Credentials addresses authentication, not the missing provider plugins that init is responsible for installing.
-- **d** ❌ validate checks configuration syntax and internal consistency, but it also requires an initialized directory with providers installed.
+- **a** ❌ validate needs an initialized directory with the providers installed, so it cannot run until the provider is downloaded; it checks syntax, it does not fetch plugins.
+- **b** ✅ terraform init installs every provider the configuration requires (including a newly added google-beta) and updates the dependency lock file; it must be rerun whenever providers, modules or the backend change.
+- **c** ❌ Application Default Credentials fix authentication failures when the provider calls Google Cloud APIs; they do not download a provider plugin that is missing.
+- **d** ❌ terraform refresh (an alias for apply -refresh-only) still needs every required provider loaded, so it fails with the same missing-provider error; it also only updates state, it never installs anything.
 
-**The concept.** terraform init prepares a working directory for use: it installs the provider plugins declared in the configuration (for example hashicorp/google), initializes any modules, and configures the state backend.
+**The concept.** terraform init prepares a working directory: it downloads the providers and modules the configuration declares, records provider versions in the dependency lock file and configures the state backend.
 
-**Why this is correct.** The error explicitly says provider plugins are missing, and provider installation is the job of terraform init. In a freshly cloned repository nothing has been downloaded yet, so init is always the first command. Once init completes, plan can build its execution graph against the installed google provider. Credentials commands solve a different class of failure (permission or authentication errors), and neither validate nor apply can run in an uninitialized directory.
+**Why this is correct.** Adding a provider (google-beta here) changes the configuration's dependencies, so the existing working directory is no longer fully initialized. Only terraform init installs providers, and it is safe to rerun in an existing directory. validate and terraform refresh both load providers first, so they fail the same way, and gcloud credentials solve a different problem: authentication at API-call time.
 
 **How to reason it out**
 
-1. Clone the repository and change into the Terraform configuration directory.
-2. Run terraform init to download providers, initialize modules, and configure the backend.
-3. Run terraform plan to preview the proposed changes.
-4. Run terraform apply once the plan output has been reviewed.
+1. Notice the failure happens before Terraform reads any infrastructure, so it is a local setup problem, not a credentials or state problem.
+2. Identify what changed: a new provider requirement in the configuration.
+3. Recall that providers, modules and backend settings are installed or configured only by terraform init.
+4. Rerun terraform init, then terraform plan.
 
-> **Exam tip:** terraform init is always the first command in a fresh checkout - it installs providers and wires up the backend.
+> **Exam tip:** New provider, new module or changed backend: run terraform init again before plan or apply.
 
 </details>
 
@@ -400,34 +407,35 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Planning and implementing a cloud solution*
 
-**A media company runs a nightly batch rendering job on Compute Engine. The job checkpoints its progress to Cloud Storage every few minutes and can restart from the last checkpoint if interrupted. Which option is the MOST cost-effective way to run this job?** Choose one.
+**A media company runs a rendering job on Compute Engine for about three hours each night. The job checkpoints its progress to Cloud Storage every few minutes and can resume from the last checkpoint if a worker VM stops. The company wants to lower the cost of the job without changing its code. What should you do?** Choose one.
 
-- **a.** Run the job on Spot VMs
-- **b.** Run the job on standard VMs and rely on sustained use discounts
-- **c.** Purchase a three-year committed use discount for standard VMs
-- **d.** Run the job on sole-tenant nodes
+- **a.** Run the rendering workers as Spot VMs
+- **b.** Run the rendering workers under a 1-year committed use discount
+- **c.** Run the rendering workers to earn sustained use discounts
+- **d.** Run the rendering workers on sole-tenant nodes
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: a**
 
-- **a** ✅ Spot VMs offer the deepest Compute Engine discounts (typically 60-91 percent off on-demand) in exchange for possible preemption, which this checkpointed, restartable job tolerates by design.
-- **b** ❌ Sustained use discounts are modest and apply to VMs running a large portion of the month; a nightly job neither runs long enough to maximize them nor comes close to Spot pricing.
-- **c** ❌ Committed use discounts require a long-term spend commitment and suit steady, predictable 24/7 usage - paying for committed capacity that sits idle most of the day costs more than Spot for an interruptible nightly batch.
-- **d** ❌ Sole-tenant nodes dedicate an entire physical server to you for compliance or licensing needs and carry a price premium - the opposite of a cost optimization.
+- **a** ✅ Spot VMs carry the deepest Compute Engine discount in exchange for possible preemption, which this checkpointed, resumable job tolerates by design.
+- **b** ❌ Committed use discounts bill the committed capacity around the clock, which suits steady 24/7 usage, not a job that runs three hours a night.
+- **c** ❌ Sustained use discounts apply automatically only once a VM runs for more than about 25% of the month; three hours a night is roughly 12% of the month, so the job earns little or nothing.
+- **d** ❌ Sole-tenant nodes dedicate a physical host for isolation or licensing reasons and cost more than shared capacity.
 
-**The concept.** Spot VMs are Compute Engine capacity sold at a steep discount because Google can preempt them at any time; they are the standard cost lever for fault-tolerant, interruptible workloads like batch processing.
+**The concept.** Spot VMs are spare Compute Engine capacity sold at a steep discount (typically 60-91% off on-demand) that Compute Engine can preempt at any time; they are the standard cost lever for fault-tolerant, interruptible work.
 
-**Why this is correct.** The job's checkpoint-and-restart design means preemption costs only a few minutes of rework, so the workload matches the Spot model exactly and captures the largest possible discount. Sustained use discounts are small and usage-proportional, committed use requires paying for capacity around the clock, and sole-tenant nodes increase cost rather than reduce it.
+**Why this is correct.** Because the job checkpoints every few minutes, a preemption costs only a little rework, so Spot pricing fits it exactly. A committed use discount is tempting, but you pay for the commitment 24 hours a day while the job runs three. Sustained use discounts only start once a VM runs for more than a quarter of the month, which a three-hour nightly job never reaches, and sole-tenant nodes add a premium.
 
 **How to reason it out**
 
-1. Confirm the workload is fault tolerant: it checkpoints and can resume after interruption.
-2. Map fault-tolerant batch work to Spot VMs, the discount model built for preemptible capacity.
-3. Reject discount models designed for steady always-on usage (sustained use, committed use) and premium isolation options (sole-tenant).
+1. Confirm the workload tolerates interruption: it checkpoints and resumes.
+2. Note the usage pattern: about three hours a night, roughly 12% of the month.
+3. Rule out discounts tied to steady usage: committed use (billed 24/7) and sustained use (needs more than 25% of the month).
+4. Match interruptible, short-duration work to Spot VMs.
 
-> **Exam tip:** If a workload can survive preemption, Spot VMs are almost always the most cost-effective Compute Engine choice.
+> **Exam tip:** Interruptible, checkpointed work points to Spot VMs; committed use and sustained use discounts only pay off for steady usage.
 
 </details>
 
@@ -439,34 +447,35 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Ensuring the successful operation of a cloud solution*
 
-**A Compute Engine instance in your project was created without an external IP address for security reasons. You need to open an SSH session to it from your laptop using the gcloud CLI, without adding a bastion host or assigning a public IP. What should you do?** Choose one.
+**A Compute Engine VM was created without an external IP address. An engineer must open an SSH session to it from a laptop on the public internet. The company has no VPN or Interconnect into the VPC, will not run a bastion host, and does not allow a public IP on the VM, even temporarily. What should the engineer do?** Choose one.
 
-- **a.** Assign an ephemeral external IP to the instance, connect, and then remove the IP afterwards.
-- **b.** Create a Cloud NAT gateway in the VM's region so SSH traffic can reach the instance.
-- **c.** Run gcloud compute ssh with the --tunnel-through-iap flag to connect through Identity-Aware Proxy TCP forwarding.
-- **d.** Open firewall port 22 to 0.0.0.0/0 so the instance's internal IP becomes reachable from the internet.
+- **a.** Attach an ephemeral external IP, run gcloud compute ssh, then remove the IP.
+- **b.** Run gcloud compute ssh with the --internal-ip flag.
+- **c.** Run gcloud compute ssh with the --tunnel-through-iap flag.
+- **d.** Add a Cloud NAT gateway to the subnet, then run gcloud compute ssh.
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: c**
 
-- **a** ❌ Temporarily exposing the VM with a public IP defeats the security posture the team chose and adds manual toil; IAP tunneling avoids the external IP entirely.
-- **b** ❌ Cloud NAT only provides outbound internet access for instances without external IPs; it never accepts inbound connections such as SSH from your laptop.
-- **c** ✅ IAP TCP forwarding tunnels SSH traffic through Google's IAP infrastructure to the instance's internal IP, so no external IP or bastion host is needed.
-- **d** ❌ A firewall rule cannot make an RFC 1918 internal IP routable from the internet, and opening SSH to 0.0.0.0/0 is a security anti-pattern.
+- **a** ❌ This works mechanically but puts a public IP on the VM, which the stem forbids even temporarily.
+- **b** ❌ --internal-ip makes gcloud connect to the VM's private address, which only works from a network with a route into the VPC (VPN, Interconnect, another VM); a laptop on the internet has none.
+- **c** ✅ IAP TCP forwarding carries the SSH session from the laptop through Identity-Aware Proxy to the VM's internal IP, so no public IP, VPN or bastion is needed.
+- **d** ❌ Cloud NAT translates outbound connections from the VM; it does not accept inbound SSH sessions from the internet.
 
-**The concept.** Identity-Aware Proxy (IAP) TCP forwarding lets you SSH or RDP into Compute Engine instances that have no external IP by tunneling the connection through Google's IAP service, authenticated by IAM.
+**The concept.** Identity-Aware Proxy (IAP) TCP forwarding lets you SSH or RDP to Compute Engine VMs that have only internal IPs, by tunnelling the connection through Google's IAP service and authorising it with IAM.
 
-**Why this is correct.** gcloud compute ssh INSTANCE --tunnel-through-iap wraps the SSH session in an IAP tunnel that terminates on the instance's internal IP. Access is controlled by the roles/iap.tunnelResourceAccessor IAM role and a firewall rule allowing IAP's source range, so the VM stays completely private. An ephemeral external IP re-exposes the VM, Cloud NAT is outbound-only by design, and no firewall rule can make a private internal address internet-routable.
+**Why this is correct.** gcloud compute ssh --tunnel-through-iap wraps the SSH session in an IAP tunnel that ends on the VM's internal IP, so the VM stays private and the laptop needs nothing but gcloud and IAM permission. The tempting near-twin is --internal-ip: it also avoids a public IP, but it needs network reachability to the private address, which the stem rules out (no VPN or Interconnect). A temporary external IP breaks the stated policy, and Cloud NAT is outbound-only.
 
 **How to reason it out**
 
-1. Grant your user the roles/iap.tunnelResourceAccessor role on the instance or project.
-2. Ensure a firewall rule allows ingress on tcp:22 from IAP's source range 35.235.240.0/20.
-3. Connect with: gcloud compute ssh INSTANCE_NAME --zone=ZONE --tunnel-through-iap.
+1. Note the constraints: no external IP, no bastion, no private network path from the laptop.
+2. Eliminate anything that adds a public IP or relies on a route into the VPC (--internal-ip).
+3. Remember Cloud NAT is egress-only, so it cannot carry an inbound SSH session.
+4. Choose IAP TCP forwarding: gcloud compute ssh VM --zone=ZONE --tunnel-through-iap.
 
-> **Exam tip:** To SSH into a VM with no external IP, use gcloud compute ssh --tunnel-through-iap with IAP TCP forwarding.
+> **Exam tip:** No external IP and no private network path: gcloud compute ssh --tunnel-through-iap; --internal-ip needs a VPN, Interconnect or a host inside the VPC.
 
 </details>
 
@@ -478,35 +487,35 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Ensuring the successful operation of a cloud solution*
 
-**Your security team wants SSH access to all Compute Engine instances in a project to be governed centrally through IAM roles instead of per-instance SSH keys in metadata. Engineers who leave the company must lose VM access the moment their Google account is disabled. What should you configure?** Choose one.
+**Your security team wants SSH access to every Linux VM in a project to be granted and revoked through IAM, with no SSH keys stored in metadata to clean up. When an engineer leaves and their Google account is disabled, their VM access must end at once. Engineers do not need sudo. What should you configure?** Choose one.
 
-- **a.** Require engineers to connect only through the Cloud Console SSH-in-browser button.
-- **b.** Store each engineer's public SSH key in project-wide metadata so keys are managed in one place.
-- **c.** Enable OS Login by setting the enable-oslogin=TRUE metadata key at the project level and grant engineers the roles/compute.osLogin IAM role.
-- **d.** Create a shared service account key that engineers use to SSH into instances.
+- **a.** Set enable-oslogin=TRUE in project metadata and grant roles/compute.viewer.
+- **b.** Add each engineer's public key to project metadata and grant roles/compute.instanceAdmin.v1.
+- **c.** Set enable-oslogin=TRUE in project metadata and grant roles/compute.osLogin.
+- **d.** Set block-project-ssh-keys=TRUE on each VM and grant roles/iap.tunnelResourceAccessor.
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: c**
 
-- **a** ❌ SSH-in-browser is just a client; without OS Login the Console still provisions metadata-based keys, so access is not tied to IAM role membership.
-- **b** ❌ Project metadata keys are still static SSH keys: disabling a Google account does not remove the key, so departed engineers can keep connecting until keys are manually cleaned up.
-- **c** ✅ OS Login links Linux accounts to Google identities, so SSH access is granted through IAM roles and is revoked automatically when the Google account is disabled.
-- **d** ❌ Sharing one credential removes individual accountability and revoking a single engineer means rotating the key for everyone; it is the opposite of centralized per-identity control.
+- **a** ❌ OS Login is enabled, but compute.viewer has no OS Login permission, so the engineers could not log in at all.
+- **b** ❌ Project metadata keys are static: disabling the Google account does not remove the key, so access persists until someone deletes it.
+- **c** ✅ OS Login maps each Linux account to a Google identity and checks IAM at login, so disabling the account or removing the role ends access; compute.osLogin gives login without sudo.
+- **d** ❌ Blocking project keys pushes keys into instance metadata instead, and the IAP role only authorises tunnels; neither ties the Linux login to IAM.
 
-**The concept.** OS Login replaces metadata-managed SSH keys with IAM-governed access: a user's POSIX identity and SSH capability derive from their Google account and the roles/compute.osLogin or roles/compute.osAdminLogin roles.
+**The concept.** OS Login replaces metadata-managed SSH keys with IAM-governed access: a user's POSIX account and right to log in come from their Google identity plus roles/compute.osLogin (or roles/compute.osAdminLogin for sudo).
 
-**Why this is correct.** With enable-oslogin=TRUE set in project metadata, every instance in the project requires OS Login. Access is then purely a function of live IAM bindings, so suspending or deleting a Google Workspace account instantly removes SSH access with no key cleanup. Metadata SSH keys and shared service account keys persist after offboarding, and SSH-in-browser without OS Login still relies on metadata keys.
+**Why this is correct.** With enable-oslogin=TRUE in project metadata, every VM in the project uses OS Login, so login is decided by live IAM bindings at connection time. Disabling the Google account or removing the binding ends access with no key cleanup. The near-twin with compute.viewer enables OS Login but grants no login permission; metadata keys survive offboarding; the IAP tunnel role controls the network path, not the Linux login. If the VM runs as a service account, engineers also need roles/iam.serviceAccountUser on it.
 
 **How to reason it out**
 
-1. Set enable-oslogin=TRUE in project-wide metadata (gcloud compute project-info add-metadata --metadata enable-oslogin=TRUE).
-2. Grant engineers roles/compute.osLogin (or osAdminLogin for sudo) on the project or specific instances.
-3. Have engineers connect with gcloud compute ssh; their POSIX account is derived from their Google identity.
-4. Offboard by disabling the Google account or removing the IAM binding — no key rotation needed.
+1. Identify the requirement: login decided by IAM, nothing to clean up on offboarding.
+2. Enable OS Login project-wide with enable-oslogin=TRUE in project metadata.
+3. Pick the role by privilege: compute.osLogin for standard users, compute.osAdminLogin for sudo.
+4. Offboard by disabling the account or removing the binding; no key rotation is needed.
 
-> **Exam tip:** OS Login ties SSH access to IAM identities, so revoking the Google account revokes VM access instantly.
+> **Exam tip:** OS Login = enable-oslogin=TRUE plus roles/compute.osLogin (osAdminLogin for sudo); access then follows the Google account.
 
 </details>
 
@@ -518,35 +527,35 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Ensuring the successful operation of a cloud solution*
 
-**A security audit of a Cloud Storage bucket finds a confusing mix of per-object ACLs and bucket-level IAM bindings, and no one can say definitively who can read which object. You must ensure access is controlled exclusively through IAM at the bucket level going forward. What should you do?** Choose one.
+**A security audit of an existing Cloud Storage bucket finds a mix of per-object ACL entries and IAM bindings on the bucket, and no one can say who can read which object. The team wants every future access decision on this bucket, including for objects uploaded later, to come from IAM policies alone. What should you do?** Choose one.
 
-- **a.** Enable uniform bucket-level access on the bucket so ACLs are disabled and IAM policies alone govern access.
-- **b.** Enable object versioning so previous permission states can be reviewed.
-- **c.** Set the predefined ACL private on every existing object with a batch job.
-- **d.** Move the objects into a new bucket protected by VPC Service Controls.
+- **a.** Enable uniform bucket-level access on the bucket and re-create needed grants as IAM bindings.
+- **b.** Enforce the storage.uniformBucketLevelAccess organization policy constraint on the project.
+- **c.** Enable public access prevention and remove the allUsers bindings from the bucket IAM policy.
+- **d.** Run a batch job that resets each existing object's ACL to the private predefined ACL.
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: a**
 
-- **a** ✅ Uniform bucket-level access turns off object ACLs entirely, making bucket IAM the single, auditable source of truth for permissions.
-- **b** ❌ Versioning preserves object data generations; it records nothing about permissions and does not change how access is evaluated.
-- **c** ❌ Rewriting ACLs still leaves the dual ACL+IAM model in place — future objects can get divergent ACLs again, so the audit problem returns.
-- **d** ❌ VPC Service Controls constrain which network/service perimeters can reach the API; they don't consolidate the ACL-versus-IAM permission model inside the bucket.
+- **a** ✅ Uniform bucket-level access disables object ACLs on this bucket, so bucket IAM (plus inherited policies) is the only permission system for current and future objects.
+- **b** ❌ This constraint requires uniform bucket-level access on newly created buckets; it does not switch an existing fine-grained bucket over, so this bucket keeps its ACLs.
+- **c** ❌ Public access prevention blocks grants to allUsers and allAuthenticatedUsers, but non-public object ACLs keep working, so the dual permission model remains.
+- **d** ❌ Resetting ACLs cleans up today's objects, but ACLs stay active, so a later upload or script can attach a divergent object ACL again.
 
-**The concept.** Cloud Storage supports two permission systems — fine-grained per-object ACLs and bucket-level IAM. Uniform bucket-level access disables ACLs so that only IAM applies, which is Google's recommended model.
+**The concept.** Cloud Storage has two permission systems: bucket-level IAM and per-object ACLs (fine-grained access). Uniform bucket-level access turns ACLs off for a bucket so IAM alone decides.
 
-**Why this is correct.** Enabling uniform bucket-level access makes every access decision flow through the bucket's IAM policy (plus inherited project/folder/org policies), eliminating the per-object ACL exceptions the audit could not account for. It can be enforced org-wide with the constraints/storage.uniformBucketLevelAccess org policy. Rewriting ACLs is a temporary cleanup, versioning is a data-protection feature, and VPC Service Controls solve perimeter exfiltration, not intra-bucket permission sprawl.
+**Why this is correct.** The requirement is about this existing bucket and about objects uploaded later, so the fix must disable ACLs on the bucket itself. Enabling uniform bucket-level access does exactly that, after which grants are expressed only as IAM bindings. Resetting ACLs is a one-time cleanup that leaves ACLs usable, public access prevention only blocks public principals, and the organization policy constraint governs new buckets rather than converting an existing one.
 
 **How to reason it out**
 
-1. Review existing object ACLs to identify grants that must be re-expressed as IAM bindings.
-2. Enable the setting: gcloud storage buckets update gs://BUCKET --uniform-bucket-level-access.
-3. Add equivalent IAM bindings (e.g., roles/storage.objectViewer) for principals who still need access.
-4. Note that after 90 days the setting becomes permanent, locking in the IAM-only model.
+1. Identify the requirement: one permission model (IAM) for this existing bucket, now and for future uploads.
+2. Recognise that per-object ACLs are the second model and must be disabled, not just cleaned.
+3. Separate look-alikes: public access prevention targets public principals only; the org constraint applies to new buckets.
+4. Enable uniform bucket-level access, then re-create any needed access as IAM bindings (it can be reverted only within 90 days).
 
-> **Exam tip:** Uniform bucket-level access disables ACLs so bucket IAM is the only permission system — the recommended state for auditable buckets.
+> **Exam tip:** To make IAM the only permission system on a bucket, enable uniform bucket-level access on that bucket; ACL cleanups and public access prevention don't remove ACLs.
 
 </details>
 
@@ -558,34 +567,35 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Ensuring the successful operation of a cloud solution*
 
-**Your team's subnet in a custom-mode VPC network was created with the range 10.10.0.0/24 and is nearly out of usable addresses. Running Compute Engine VMs in the subnet must keep their current IP addresses. What should you do?** Choose one.
+**A regional managed instance group places its VMs in app-subnet, a custom mode subnet in us-central1 with the primary range 10.10.0.0/24. Autoscaling now fails because the subnet has no free addresses. Running VMs must keep their internal IPs, the instance template must keep using app-subnet, and addresses 10.10.1.0 through 10.10.3.255 are unused in this and every connected network. Which command should you run? (The --region flag is omitted.)** Choose one.
 
-- **a.** Add a secondary IP range to the subnet and migrate the VMs' primary interfaces onto it.
-- **b.** Switch the VPC network to auto mode so that Google automatically enlarges the subnet ranges in every region.
-- **c.** Delete the subnet and recreate it with a larger range, then restart the VMs so they pick up new addresses.
-- **d.** Run gcloud compute networks subnets expand-ip-range to widen the subnet's primary range to a larger CIDR block such as /22.
+- **a.** gcloud compute networks subnets update app-subnet --add-secondary-ranges=more=10.10.4.0/24
+- **b.** gcloud compute networks subnets expand-ip-range app-subnet --prefix-length=26
+- **c.** gcloud compute networks subnets create app-subnet-2 --range=10.10.1.0/24
+- **d.** gcloud compute networks subnets expand-ip-range app-subnet --prefix-length=22
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: d**
 
-- **a** ❌ Secondary ranges are used for alias IPs (for example, GKE Pods and Services), not for VM primary interface addresses. Moving primary interfaces would also change the VMs' IPs.
-- **b** ❌ You can convert auto mode to custom mode, not the reverse, and auto-mode subnets use fixed /20 ranges carved from 10.128.0.0/9 — there is no automatic enlargement of an existing custom subnet.
-- **c** ❌ A subnet cannot be deleted while resources use it, and recreating it would force new IP assignments — exactly what the requirement forbids. Expansion in place avoids all of this.
-- **d** ✅ Correct. A subnet's primary IPv4 range can be expanded in place to a larger (numerically smaller prefix length) CIDR block without disrupting running VMs, and existing IPs are preserved.
+- **a** ❌ A secondary range serves alias IP ranges, such as GKE Pods. New VMs still take their primary interface address from the full primary range, so autoscaling keeps failing.
+- **b** ❌ A /26 is smaller than the current /24. The command only accepts a shorter prefix (a larger range), so this request is rejected.
+- **c** ❌ A second subnet adds addresses, but the instance template must keep using app-subnet, so the group never places VMs in the new subnet.
+- **d** ✅ Lowering the prefix length from /24 to /22 grows the primary range in place. Running VMs keep their addresses and the template still points at app-subnet.
 
-**The concept.** Subnet primary IPv4 ranges in Google Cloud can be expanded in place, and expansion is the supported way to add capacity without disturbing existing workloads.
+**The concept.** A subnet's primary IPv4 range is resized in place by lowering its prefix length with gcloud compute networks subnets expand-ip-range.
 
-**Why this is correct.** The gcloud compute networks subnets expand-ip-range command grows the primary range to a shorter prefix (for example, /24 to /22) while the network keeps serving traffic. Existing VM addresses fall inside the new, larger range, so nothing needs to be recreated or re-addressed. Deleting and recreating the subnet is blocked while it is in use and would change IPs; auto mode cannot be enabled on a custom-mode network; secondary ranges serve alias IPs, not primary interfaces.
+**Why this is correct.** expand-ip-range with --prefix-length=22 turns 10.10.0.0/24 into 10.10.0.0/22, four times the space, without downtime and without changing any running VM's address. The managed instance group keeps using app-subnet, so new VMs get addresses from the larger range. A secondary range does not feed VM primary interfaces, a new subnet is ignored by a template pinned to app-subnet, and a longer prefix such as /26 would shrink the range, which the command does not allow.
 
 **How to reason it out**
 
-1. Confirm the new, larger CIDR block does not overlap any other subnet in the VPC network or any peered network.
-2. Run gcloud compute networks subnets expand-ip-range SUBNET --region=REGION --prefix-length=22.
-3. Verify the new range with gcloud compute networks subnets describe and confirm existing VMs retained their addresses.
+1. Identify what is exhausted: the primary range that VM primary interfaces draw from.
+2. Note the constraints: same subnet, unchanged VM addresses, no recreation.
+3. Choose expand-ip-range with a shorter prefix length (/24 to /22).
+4. Confirm the new range overlaps nothing in the network or connected networks before running it.
 
-> **Exam tip:** Subnet ranges can only be expanded, never shrunk — use expand-ip-range to add capacity without touching running VMs.
+> **Exam tip:** More addresses in the same subnet means expand-ip-range with a shorter prefix; it never goes the other way.
 
 </details>
 
@@ -597,34 +607,35 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Ensuring the successful operation of a cloud solution*
 
-**Your operations team must be emailed whenever CPU utilization on a production Compute Engine VM stays above 90% for 10 minutes. Which Cloud Monitoring configuration accomplishes this?** Choose one.
+**Your operations team must be emailed when CPU utilization on a production Compute Engine VM stays above 90% for 10 minutes. During the nightly batch window, jobs push CPU above 90% for one or two minutes several times an hour, and those spikes must not notify anyone. What should you configure in Cloud Monitoring?** Choose one.
 
-- **a.** An alerting policy with a metric-threshold condition on CPU utilization (90% for a 10-minute duration) and an email notification channel attached.
-- **b.** A log-based metric counting CPU log lines, exported to BigQuery for daily analysis.
-- **c.** An uptime check against the VM's external IP with email alerting.
-- **d.** A dashboard with a CPU utilization chart that the team checks each morning.
+- **a.** An alerting policy with a CPU utilization threshold of 90%, a 10-minute retest window, and an email channel.
+- **b.** An uptime check against the VM's external IP at a 10-minute interval, with an alerting policy and an email channel.
+- **c.** A log-based alerting policy that matches high-CPU warnings in the VM's system log over 10 minutes, with an email channel.
+- **d.** An alerting policy with a CPU utilization threshold of 90%, a 5-minute retest window, and an email channel.
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: a**
 
-- **a** ✅ Correct. Alerting policies combine a condition (metric, threshold, retest window/duration) with notification channels; this matches the requirement exactly.
-- **b** ❌ CPU utilization is a system metric, not a log entry, and a daily BigQuery report is not real-time notification. This pipeline solves a different problem.
-- **c** ❌ Uptime checks probe availability of an endpoint from external locations; they cannot measure CPU utilization or any resource metric.
-- **d** ❌ Dashboards visualize metrics but never send notifications. Sustained 90% CPU could go unnoticed for hours between manual checks.
+- **a** ✅ Correct. The threshold plus a 10-minute retest window means the condition must hold for the whole window before an incident opens, so short batch spikes never notify.
+- **b** ❌ Uptime checks test whether an endpoint answers; they report reachability and latency, not the VM's CPU utilization.
+- **c** ❌ CPU utilization is a metric that Monitoring already collects; a log-match condition fires per matching entry and has no notion of a value sustained for 10 minutes.
+- **d** ❌ A 5-minute retest window ignores the one- or two-minute batch spikes, but it notifies on load sustained for only 5 minutes, earlier than the 10-minute requirement.
 
-**The concept.** Cloud Monitoring alerting policies pair one or more conditions (typically a metric threshold sustained for a duration) with notification channels such as email, SMS, PagerDuty, or Pub/Sub.
+**The concept.** A metric-threshold alerting policy combines a metric, a comparison and threshold, a retest window (duration) and notification channels.
 
-**Why this is correct.** The requirement names a metric (CPU utilization), a threshold (90%), a duration (10 minutes), and a delivery method (email) — the four ingredients of a standard metric-threshold alerting policy. The duration window prevents flapping on brief spikes. Dashboards are passive, uptime checks test reachability rather than resource metrics, and log pipelines add latency and complexity for data Monitoring already collects.
+**Why this is correct.** The requirement has two parts: notify on CPU sustained above 90% for 10 minutes, and stay quiet on brief spikes. The retest window sets how long the condition must stay true before the policy opens an incident, so a 10-minute window matches the requirement exactly. A 5-minute window is the tempting near-twin: it also ignores the short spikes, but it alerts on 5-minute episodes the team did not ask about. Uptime checks measure reachability, and a log-match alert fires per matching log entry rather than on a sustained metric value.
 
 **How to reason it out**
 
-1. Create an email notification channel in Cloud Monitoring (Alerting > Notification channels).
-2. Create an alerting policy with a condition on compute.googleapis.com/instance/cpu/utilization, threshold above 0.9, and a 10-minute duration.
-3. Attach the email channel, add runbook documentation to the policy, and test by generating load on a non-critical VM.
+1. Identify the signal: CPU utilization is a resource metric Monitoring already collects for the VM.
+2. Pick a metric-threshold condition at 90%.
+3. Set a 10-minute retest window so short spikes do not meet the condition.
+4. Attach an email notification channel to the policy.
 
-> **Exam tip:** Alerting policy = condition (metric + threshold + duration) + notification channel; dashboards alone never notify anyone.
+> **Exam tip:** Threshold + retest window + notification channel: the retest window is what separates a sustained problem from a spike.
 
 </details>
 
@@ -639,8 +650,8 @@ For many more, with the same explanation on every option, use the [ACE practice 
 **A security auditor asks you to produce a list of every principal that currently has a role granted directly on the project my-app-prod. Which gcloud command should you run?** Choose one.
 
 - **a.** gcloud iam service-accounts list --project my-app-prod
-- **b.** gcloud projects add-iam-policy-binding my-app-prod
-- **c.** gcloud iam roles list --project my-app-prod
+- **b.** gcloud iam roles list --project my-app-prod
+- **c.** gcloud projects add-iam-policy-binding my-app-prod
 - **d.** gcloud projects get-iam-policy my-app-prod
 
 <details>
@@ -649,8 +660,8 @@ For many more, with the same explanation on every option, use the [ACE practice 
 **Answer: d**
 
 - **a** ❌ This lists the service accounts that exist in the project as resources; it does not show which principals hold roles on the project.
-- **b** ❌ add-iam-policy-binding modifies the policy by granting a role to a principal; it does not display the existing policy, and it requires --member and --role flags.
-- **c** ❌ This lists the custom roles defined in the project, not who has been granted roles. It says nothing about principals or bindings.
+- **b** ❌ This lists the custom roles defined in the project, not who has been granted roles. It says nothing about principals or bindings.
+- **c** ❌ add-iam-policy-binding modifies the policy by granting a role to a principal; it does not display the existing policy, and it requires --member and --role flags.
 - **d** ✅ Correct. get-iam-policy returns the project's IAM policy, which lists every role binding and the principals (users, groups, service accounts) in each binding.
 
 **The concept.** An IAM policy is a collection of role bindings attached to a resource, where each binding pairs a role with a list of principals. Viewing the policy on a project shows exactly who can do what at that level.
@@ -676,35 +687,35 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Configuring access and security*
 
-**You need to grant the user dana@example.com the ability to view (but not modify) Compute Engine resources in the project web-prod using the command line. Which command follows Google-recommended practice?** Choose one.
+**Dana (dana@example.com) needs to list and inspect the VMs, disks and networks in project web-prod, which sits in a folder alongside other teams' projects. She must not change anything, must not see other services' data, and must get nothing in the folder's other projects. Which command should you run?** Choose one.
 
-- **a.** gcloud projects add-iam-policy-binding web-prod --member="user:dana@example.com" --role="roles/viewer"
-- **b.** gcloud projects set-iam-policy web-prod --member="user:dana@example.com" --role="roles/compute.viewer"
+- **a.** gcloud resource-manager folders add-iam-policy-binding 4521 --member="user:dana@example.com" --role="roles/compute.viewer"
+- **b.** gcloud projects add-iam-policy-binding web-prod --member="user:dana@example.com" --role="roles/viewer"
 - **c.** gcloud projects add-iam-policy-binding web-prod --member="user:dana@example.com" --role="roles/compute.viewer"
-- **d.** gcloud iam roles update compute.viewer --add-user dana@example.com
+- **d.** gcloud resource-manager folders add-iam-policy-binding 4521 --member="user:dana@example.com" --role="roles/viewer"
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: c**
 
-- **a** ❌ roles/viewer is a basic role that grants read access to nearly every service in the project, far more than Compute Engine. It violates least privilege when only Compute visibility is needed.
-- **b** ❌ set-iam-policy replaces the entire policy from a JSON/YAML file and does not accept --member/--role flags. Using it carelessly can wipe existing bindings.
-- **c** ✅ Correct. This grants the predefined, least-privilege compute.viewer role to the user principal on the project using the standard binding syntax.
-- **d** ❌ gcloud iam roles update edits a custom role's definition (its permission list); it does not grant roles to principals, and there is no --add-user flag.
+- **a** ❌ The role is right, but a folder binding is inherited by every project in the folder, so she would also see the other teams' Compute Engine resources.
+- **b** ❌ The project is the right target, but roles/viewer is the basic role that reads nearly every service in the project, not only Compute Engine.
+- **c** ✅ Correct. roles/compute.viewer is the predefined read-only Compute Engine role, and binding it on web-prod limits it to that one project.
+- **d** ❌ This is wrong on both counts: the basic Viewer role reads every service, and the folder binding reaches every project in the folder.
 
-**The concept.** Granting access in Cloud IAM means adding a binding of a role to a principal on a resource. Predefined roles scoped to one service (like roles/compute.viewer) are preferred over basic roles (Owner/Editor/Viewer) because they follow least privilege.
+**The concept.** A role grant is a binding of one role to a principal on one node of the resource hierarchy; both the role and the node decide how far the access reaches.
 
-**Why this is correct.** add-iam-policy-binding is the safe, additive command for granting a single role: it reads the current policy, appends the binding, and writes it back. roles/compute.viewer grants read-only Compute Engine permissions and nothing else, matching the requirement exactly. The basic roles/viewer role grants read access across almost all services, and set-iam-policy is a full policy replacement that risks clobbering other bindings.
+**Why this is correct.** Two choices must both be narrow. The role: roles/compute.viewer is the predefined read-only Compute Engine role, while basic roles/viewer reads almost every service. The node: binding on the project web-prod covers only that project, while a folder binding is inherited by every project in the folder. Only the project-level compute.viewer grant satisfies both constraints.
 
 **How to reason it out**
 
-1. Choose the narrowest role that satisfies the need — a predefined service-specific role like roles/compute.viewer rather than a basic role.
-2. Identify the principal type prefix: user: for a human Google Account.
-3. Run gcloud projects add-iam-policy-binding with --member and --role to append the binding safely.
-4. Verify with gcloud projects get-iam-policy that the binding was added as intended.
+1. Identify the job: read-only, Compute Engine only, one project.
+2. Pick the narrowest predefined role: roles/compute.viewer, not the basic Viewer role.
+3. Pick the lowest node that covers the need: the project, not its parent folder.
+4. Check the command form: add-iam-policy-binding with --member=user:EMAIL and --role=roles/NAME.
 
-> **Exam tip:** Grant the narrowest predefined role with add-iam-policy-binding; avoid basic roles and full-policy replacement.
+> **Exam tip:** Narrow both axes of a grant: the narrowest predefined role, bound at the lowest node that covers the need.
 
 </details>
 
@@ -756,35 +767,35 @@ For many more, with the same explanation on every option, use the [ACE practice 
 
 *Configuring access and security*
 
-**A new operations engineer must be able to start, stop, and reconfigure Compute Engine VM instances in a production project, but must not be able to modify Cloud Storage buckets, BigQuery datasets, or IAM policies. Following Google-recommended practices, which role should you grant?** Choose one.
+**A new operations engineer must be able to start, stop, and reconfigure Compute Engine VM instances in a production project. They must not be able to change VPC networks, firewall rules, Cloud Storage buckets, or IAM policies. Following Google-recommended practices, which role should you grant on the project?** Choose one.
 
-- **a.** The basic role roles/editor on the project
-- **b.** The predefined role roles/compute.instanceAdmin.v1 on the project
-- **c.** The predefined role roles/compute.viewer on the project
-- **d.** The basic role roles/owner on the project
+- **a.** roles/compute.admin
+- **b.** roles/compute.instanceAdmin.v1
+- **c.** roles/compute.storageAdmin
+- **d.** roles/compute.osAdminLogin and roles/compute.viewer
 
 <details>
 <summary>Show answer and explanation</summary>
 
 **Answer: b**
 
-- **a** ❌ Editor grants modify access to nearly every service in the project, including Cloud Storage and BigQuery, which the engineer must not have. Google recommends avoiding basic roles in production.
-- **b** ✅ Correct. This predefined role grants full management of Compute Engine instances (create, start, stop, modify) without touching storage, analytics, or IAM — least privilege for the stated job.
-- **c** ❌ compute.viewer is read-only: the engineer could see instances but could not start, stop, or reconfigure them.
-- **d** ❌ Owner includes everything Editor has plus the ability to manage IAM policies — the opposite of the requirement and the broadest possible grant.
+- **a** ❌ compute.admin covers instances but also every other Compute Engine resource, including networks and firewall rules, which the engineer must not change.
+- **b** ✅ Correct. This predefined role covers creating, starting, stopping and modifying instances without network, firewall, storage or IAM administration.
+- **c** ❌ compute.storageAdmin manages persistent disks, images and snapshots. It does not let the engineer start, stop or reconfigure the instances themselves.
+- **d** ❌ Together these let the engineer see instances and log in to them with administrator rights on the guest OS, but they grant no Compute Engine API permission to start, stop or reconfigure instances.
 
-**The concept.** Cloud IAM offers basic roles (Owner, Editor, Viewer), predefined roles maintained by Google per service, and custom roles you assemble yourself. Predefined roles are the recommended default because they scope permissions to one service and one job function.
+**The concept.** Predefined roles are Google-maintained permission sets scoped to one service and job function. Several Compute Engine roles sound similar but cover different resources.
 
-**Why this is correct.** roles/compute.instanceAdmin.v1 contains the permissions to create, modify, start, and stop VM instances and their disks, but includes no Cloud Storage, BigQuery, or IAM-administration permissions. It exactly matches 'manage VMs, nothing else'. Editor and Owner are project-wide basic roles that sweep in every other service (Owner even adds IAM control), and compute.viewer cannot change instance state at all.
+**Why this is correct.** The engineer needs instance lifecycle and configuration control and nothing else. roles/compute.instanceAdmin.v1 is the predefined role for exactly that. roles/compute.admin would also let them start and stop VMs, which makes it tempting, but it adds network and firewall administration the stem rules out. compute.storageAdmin covers disks and images, and osAdminLogin plus compute.viewer gives guest-OS login and visibility, not control of the instance resource.
 
 **How to reason it out**
 
-1. List the actions the principal actually needs: start, stop, and reconfigure VM instances.
-2. Search the predefined roles for the Compute Engine role whose permission set matches that job — roles/compute.instanceAdmin.v1.
-3. Confirm the role does not include permissions on the services that must stay off-limits.
-4. Grant it at the project level with add-iam-policy-binding, and revisit if the scope of the job changes.
+1. List the actions required: start, stop, reconfigure instances.
+2. List what is forbidden: networks, firewalls, storage, IAM.
+3. Find the predefined role whose scope matches the allowed actions only.
+4. Eliminate roles that cover the wrong resource (disks, guest login) or too many resources (compute.admin).
 
-> **Exam tip:** Prefer service-specific predefined roles over basic Owner/Editor — they are how least privilege is done on GCP.
+> **Exam tip:** Choose the predefined role scoped to the resource the person manages: instances means compute.instanceAdmin.v1, not compute.admin.
 
 </details>
 

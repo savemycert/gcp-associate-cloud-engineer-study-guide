@@ -6,13 +6,13 @@ Tied for the largest domain on the ACE exam. It covers choosing and deploying co
 
 - **Picking compute:** first ask whether the workload is containerized, then decide who should manage the infrastructure.
 
-| Signal in the question | Choose |
-|---|---|
-| Lift and shift, custom kernel or OS, machine-bound licensing | Compute Engine |
-| Kubernetes, many cooperating containers, StatefulSets | GKE |
-| Stateless HTTP container, scale to zero, spiky traffic | Cloud Run |
-| Small handler for an upload, message, or webhook | Cloud Run functions |
-| Hosting an AI agent with no infrastructure | Agent Runtime (Gemini Enterprise Agent Platform) |
+| Signal in the question                                       | Choose                                           |
+| ------------------------------------------------------------ | ------------------------------------------------ |
+| Lift and shift, custom kernel or OS, machine-bound licensing | Compute Engine                                   |
+| Kubernetes, many cooperating containers, StatefulSets        | GKE                                              |
+| Stateless HTTP container, scale to zero, spiky traffic       | Cloud Run                                        |
+| Small handler for an upload, message, or webhook             | Cloud Run functions                              |
+| Hosting an AI agent with no infrastructure                   | Agent Runtime (Gemini Enterprise Agent Platform) |
 
 - **Availability policy:**
   - `--maintenance-policy=MIGRATE` (the usual default) live-migrates the VM during host maintenance. `TERMINATE` stops it instead, which many GPU VMs need.
@@ -57,15 +57,15 @@ Tied for the largest domain on the ACE exam. It covers choosing and deploying co
 
 - **Database selection:** ask about the data model, then scale and location, then consistency.
 
-| Need | Choose |
-|---|---|
-| Relational, one region, existing MySQL/PostgreSQL/SQL Server app | Cloud SQL |
-| Demanding PostgreSQL, mixed transactional and analytical queries | AlloyDB |
-| Relational, horizontal scale, strong consistency across regions | Spanner |
-| Documents with mobile/web sync and offline clients | Firestore (Native mode) |
-| Very high-throughput wide-column: IoT, time series | Bigtable |
-| SQL analytics over huge tables | BigQuery |
-| Cache or session store | Memorystore |
+| Need                                                             | Choose                  |
+| ---------------------------------------------------------------- | ----------------------- |
+| Relational, one region, existing MySQL/PostgreSQL/SQL Server app | Cloud SQL               |
+| Demanding PostgreSQL, mixed transactional and analytical queries | AlloyDB                 |
+| Relational, horizontal scale, strong consistency across regions  | Spanner                 |
+| Documents with mobile/web sync and offline clients               | Firestore (Native mode) |
+| Very high-throughput wide-column: IoT, time series               | Bigtable                |
+| SQL analytics over huge tables                                   | BigQuery                |
+| Cache or session store                                           | Memorystore             |
 
 - **Cloud SQL:**
   - `--availability-type=REGIONAL` adds a standby in another zone. It survives a **zone** failure only.
@@ -83,12 +83,12 @@ Tied for the largest domain on the ACE exam. It covers choosing and deploying co
   - Canonical pipeline: Pub/Sub → Dataflow → BigQuery.
 - **Cloud Storage classes:** same durability, APIs, and millisecond reads for all four. Colder means cheaper storage and pricier reads.
 
-| Class | Access pattern | Minimum storage duration |
-|---|---|---|
-| Standard | Frequent | None |
-| Nearline | About monthly | 30 days |
-| Coldline | About quarterly | 90 days |
-| Archive | Under once a year | 365 days |
+| Class    | Access pattern    | Minimum storage duration |
+| -------- | ----------------- | ------------------------ |
+| Standard | Frequent          | None                     |
+| Nearline | About monthly     | 30 days                  |
+| Coldline | About quarterly   | 90 days                  |
+| Archive  | Under once a year | 365 days                 |
 
 - Deleting early still bills the full minimum.
 - **Bucket location** is permanent: region, dual-region (optional turbo replication), or multi-region. **Autoclass** manages classes automatically.

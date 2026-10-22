@@ -6,12 +6,12 @@ This domain is the foundation the rest of the exam builds on: the resource hiera
 
 - **Resource hierarchy** (managed by Resource Manager):
 
-| Level | What it is | Typical use |
-|---|---|---|
-| Organization | Root node for the company, tied to a verified domain in Cloud Identity or Google Workspace | Company-wide guardrails and security teams |
-| Folder | Optional grouping under the organization, can nest | Departments, teams, or environments (`eng/prod`, `eng/dev`) |
-| Project | Container for resources; APIs, billing links, and quotas all apply per project | The unit of isolation between workloads |
-| Resource | VMs, buckets, databases, topics | Where the work actually runs |
+| Level        | What it is                                                                                 | Typical use                                                 |
+| ------------ | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| Organization | Root node for the company, tied to a verified domain in Cloud Identity or Google Workspace | Company-wide guardrails and security teams                  |
+| Folder       | Optional grouping under the organization, can nest                                         | Departments, teams, or environments (`eng/prod`, `eng/dev`) |
+| Project      | Container for resources; APIs, billing links, and quotas all apply per project             | The unit of isolation between workloads                     |
+| Resource     | VMs, buckets, databases, topics                                                            | Where the work actually runs                                |
 
 - **Standalone organization** (no Google Workspace): sign up for free Cloud Identity, verify the domain, and the organization node appears once a user from that domain creates the first project or billing account.
 - **Project identifiers:**
@@ -25,12 +25,12 @@ This domain is the foundation the rest of the exam builds on: the resource hiera
   - Inheritance is additive: a grant made higher up cannot be taken away by a narrower grant lower down.
 - **IAM vs organization policy:**
 
-| | IAM | Organization policy |
-|---|---|---|
-| Controls | Who can do what | What may be done at all, whatever the identity |
-| Applies to project Owners | Owners hold broad grants | Yes, Owners are constrained too |
-| Lower level can override | No, grants only add up | Yes, unless the parent blocks overrides |
-| Built from | Role bindings | Constraints: **boolean** (on/off) or **list** (allowed/denied values) |
+|                           | IAM                      | Organization policy                                                   |
+| ------------------------- | ------------------------ | --------------------------------------------------------------------- |
+| Controls                  | Who can do what          | What may be done at all, whatever the identity                        |
+| Applies to project Owners | Owners hold broad grants | Yes, Owners are constrained too                                       |
+| Lower level can override  | No, grants only add up   | Yes, unless the parent blocks overrides                               |
+| Built from                | Role bindings            | Constraints: **boolean** (on/off) or **list** (allowed/denied values) |
 
 - Constraint examples:
   - `constraints/gcp.resourceLocations`: limit which regions resources can be created in.
@@ -51,7 +51,7 @@ This domain is the foundation the rest of the exam builds on: the resource hiera
   - Grant roles to `principalSet://iam.googleapis.com/locations/global/workforcePools/POOL_ID/...` identifiers.
   - Users sign in through a federated console URL, or gcloud configured for workforce federation.
   - Choose sync into Cloud Identity when users need full Google Accounts (Workspace apps, widest product support). Choose federation when the IdP should remain the only account lifecycle.
-  - Trap: *Workforce* = people; *Workload* Identity Federation = software (Domain 4).
+  - Trap: _Workforce_ = people; _Workload_ Identity Federation = software (Domain 4).
 - **APIs** start out disabled in every new project.
   - Manage them with `gcloud services enable compute.googleapis.com`, `gcloud services list --enabled`, and `gcloud services disable`.
   - Enabling needs `serviceusage.services.enable`, and some APIs create Google-managed service agents when enabled.
@@ -109,13 +109,13 @@ This domain is the foundation the rest of the exam builds on: the resource hiera
   - Scenario: a developer's new sandbox project has no billing, so Compute Engine won't enable. The least-privilege fix is Billing Account User on that one billing account.
 - **Billing roles:**
 
-| Role | Granted on | Allows |
-|---|---|---|
+| Role                          | Granted on      | Allows                                                                               |
+| ----------------------------- | --------------- | ------------------------------------------------------------------------------------ |
 | Billing Account Administrator | Billing account | Everything: payment settings, link/unlink, budgets, exports, billing IAM, view spend |
-| Billing Account User | Billing account | Link projects to the account; no spend visibility or settings |
-| Billing Account Viewer | Billing account | Read-only costs and transactions (finance, auditors) |
-| Project Billing Manager | Project | Attach or detach the project's billing account, no other project access |
-| Billing Account Creator | Organization | Open additional self-serve accounts |
+| Billing Account User          | Billing account | Link projects to the account; no spend visibility or settings                        |
+| Billing Account Viewer        | Billing account | Read-only costs and transactions (finance, auditors)                                 |
+| Project Billing Manager       | Project         | Attach or detach the project's billing account, no other project access              |
+| Billing Account Creator       | Organization    | Open additional self-serve accounts                                                  |
 
 - Task → minimal role:
   - Link a project → Billing Account User + Project Billing Manager.

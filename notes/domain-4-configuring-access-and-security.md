@@ -12,13 +12,13 @@ This domain covers Cloud IAM and service accounts: who can act, with which roles
   - Missing one permission → find or build a role that includes it.
 - **Viewing and editing:**
 
-| Task | Command |
-|---|---|
-| View project policy (with `etag`) | `gcloud projects get-iam-policy PROJECT_ID` |
-| View at other levels | `gcloud organizations get-iam-policy`, `gcloud resource-manager folders get-iam-policy`, `gcloud storage buckets get-iam-policy gs://B` |
-| Grant | `gcloud projects add-iam-policy-binding shop-prod --member=group:web@example.com --role=roles/run.developer` |
-| Revoke | `remove-iam-policy-binding` with the same flags |
-| Bulk edit | Export, edit, then `set-iam-policy PROJECT_ID file.json` (the etag stops you from overwriting a concurrent change) |
+| Task                              | Command                                                                                                                                 |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| View project policy (with `etag`) | `gcloud projects get-iam-policy PROJECT_ID`                                                                                             |
+| View at other levels              | `gcloud organizations get-iam-policy`, `gcloud resource-manager folders get-iam-policy`, `gcloud storage buckets get-iam-policy gs://B` |
+| Grant                             | `gcloud projects add-iam-policy-binding shop-prod --member=group:web@example.com --role=roles/run.developer`                            |
+| Revoke                            | `remove-iam-policy-binding` with the same flags                                                                                         |
+| Bulk edit                         | Export, edit, then `set-iam-policy PROJECT_ID file.json` (the etag stops you from overwriting a concurrent change)                      |
 
 - The add and remove commands read the current policy, change one binding, and write it back.
 - Changing a policy needs `setIamPolicy` on that resource (Owner, or the service's admin role).
@@ -26,11 +26,11 @@ This domain covers Cloud IAM and service accounts: who can act, with which roles
 - **Policy Troubleshooter** explains why a principal does or doesn't have a permission. **IAM Recommender** suggests narrower roles based on the permissions actually used.
 - **Role types:**
 
-| Type | Who defines it | Breadth | Use |
-|---|---|---|---|
-| Basic (`roles/owner`, `roles/editor`, `roles/viewer`) | Google, legacy | Thousands of permissions across every service in the project | Avoid in production |
-| Predefined (`roles/storage.objectViewer`, `roles/pubsub.publisher`) | Google, per service | One job on one service, updated by Google as services change | Default choice |
-| Custom | You, at project or organization level | Exactly the permissions you list | Only when no predefined role fits |
+| Type                                                                | Who defines it                        | Breadth                                                      | Use                               |
+| ------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------ | --------------------------------- |
+| Basic (`roles/owner`, `roles/editor`, `roles/viewer`)               | Google, legacy                        | Thousands of permissions across every service in the project | Avoid in production               |
+| Predefined (`roles/storage.objectViewer`, `roles/pubsub.publisher`) | Google, per service                   | One job on one service, updated by Google as services change | Default choice                    |
+| Custom                                                              | You, at project or organization level | Exactly the permissions you list                             | Only when no predefined role fits |
 
 - **Editor** can modify almost everything in the project. **Owner** adds IAM management. Billing is handled by billing-account roles.
 - An answer that gives Editor for a narrow task is almost always wrong when a predefined role is offered.
@@ -70,11 +70,11 @@ This domain covers Cloud IAM and service accounts: who can act, with which roles
 
 - **Three kinds:**
 
-| Kind | Created by | Notes |
-|---|---|---|
-| Service agents (Google-managed) | Google, often when an API is enabled | Google uses them to act in your project. You can't create or delete them or see their credentials. Leave their roles alone unless the service's docs say otherwise |
-| Default service accounts | Auto-created when certain services are enabled (for example the Compute Engine default) | Editable, but historically granted project Editor. Don't use them for real workloads |
-| User-managed | You, `NAME@PROJECT_ID.iam.gserviceaccount.com` | One per workload, with minimum roles |
+| Kind                            | Created by                                                                              | Notes                                                                                                                                                              |
+| ------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Service agents (Google-managed) | Google, often when an API is enabled                                                    | Google uses them to act in your project. You can't create or delete them or see their credentials. Leave their roles alone unless the service's docs say otherwise |
+| Default service accounts        | Auto-created when certain services are enabled (for example the Compute Engine default) | Editable, but historically granted project Editor. Don't use them for real workloads                                                                               |
+| User-managed                    | You, `NAME@PROJECT_ID.iam.gserviceaccount.com`                                          | One per workload, with minimum roles                                                                                                                               |
 
 - **Create and manage:**
   - `gcloud iam service-accounts create orders-api --display-name="Orders API"`, then `list`.
@@ -95,12 +95,12 @@ This domain covers Cloud IAM and service accounts: who can act, with which roles
   - As a principal: its roles on other resources (what it can do).
   - As a resource: its own policy (who can use it). `gcloud iam service-accounts get-iam-policy EMAIL` and `add-iam-policy-binding EMAIL`.
 
-| Role on the service account | Grants |
-|---|---|
-| `roles/iam.serviceAccountUser` | Act as the account and attach it to VMs and Cloud Run services |
-| `roles/iam.serviceAccountTokenCreator` | Impersonate: mint short-lived tokens and sign as the account |
-| `roles/iam.serviceAccountAdmin` | Create, update, disable, delete, and manage the account's policy |
-| `roles/iam.serviceAccountKeyAdmin` | Create and delete keys (grant to almost no one) |
+| Role on the service account            | Grants                                                           |
+| -------------------------------------- | ---------------------------------------------------------------- |
+| `roles/iam.serviceAccountUser`         | Act as the account and attach it to VMs and Cloud Run services   |
+| `roles/iam.serviceAccountTokenCreator` | Impersonate: mint short-lived tokens and sign as the account     |
+| `roles/iam.serviceAccountAdmin`        | Create, update, disable, delete, and manage the account's policy |
+| `roles/iam.serviceAccountKeyAdmin`     | Create and delete keys (grant to almost no one)                  |
 
 - Grant these **per account**. At project level they cover **every** service account in the project.
 - Escalation trap: VM create rights + `serviceAccountUser` on a powerful account = a VM running with that account's permissions.
@@ -131,13 +131,13 @@ This domain covers Cloud IAM and service accounts: who can act, with which roles
   - Workforce = people, Workload = software.
 - **Ranking authentication options:**
 
-| Workload location | Use | Standing secret |
-|---|---|---|
-| Compute Engine, Cloud Run | Attached service account | No |
-| GKE Pods | Workload Identity Federation for GKE | No |
-| Human or automation with a Google identity | Impersonation | No |
-| Outside Google Cloud with an OIDC/SAML issuer | Workload Identity Federation | No |
-| None of the above works | Service account key (last resort) | Yes |
+| Workload location                             | Use                                  | Standing secret |
+| --------------------------------------------- | ------------------------------------ | --------------- |
+| Compute Engine, Cloud Run                     | Attached service account             | No              |
+| GKE Pods                                      | Workload Identity Federation for GKE | No              |
+| Human or automation with a Google identity    | Impersonation                        | No              |
+| Outside Google Cloud with an OIDC/SAML issuer | Workload Identity Federation         | No              |
+| None of the above works                       | Service account key (last resort)    | Yes             |
 
 📖 Full lesson: [Service Accounts, Impersonation, and Workload Identity Federation](https://www.savemycert.com/revision/gcp-associate-cloud-engineer/gcp-service-accounts-workload-identity/?utm_source=github&utm_medium=readme&utm_campaign=gcp-associate-cloud-engineer-study-guide)
 

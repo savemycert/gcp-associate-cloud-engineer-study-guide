@@ -33,11 +33,11 @@ Tied for the largest domain on the ACE exam. It covers day-2 operations on compu
   - **Service** types: `ClusterIP` (internal), `NodePort`, `LoadBalancer` (external passthrough LB). Ingress or Gateway → Application LB.
 - **Autoscalers:**
 
-| Scaler | Changes | Driven by |
-|---|---|---|
-| Horizontal Pod Autoscaler | Replica count (`kubectl autoscale`) | CPU, memory, custom or external metrics |
-| Vertical Pod Autoscaler | Pod CPU and memory requests (Off, Initial, Auto) | Observed usage |
-| Cluster autoscaler | Nodes in a pool | Pending Pods, idle nodes |
+| Scaler                    | Changes                                          | Driven by                               |
+| ------------------------- | ------------------------------------------------ | --------------------------------------- |
+| Horizontal Pod Autoscaler | Replica count (`kubectl autoscale`)              | CPU, memory, custom or external metrics |
+| Vertical Pod Autoscaler   | Pod CPU and memory requests (Off, Initial, Auto) | Observed usage                          |
+| Cluster autoscaler        | Nodes in a pool                                  | Pending Pods, idle nodes                |
 
 - VPA `Auto` evicts Pods. Never let HPA scale on a CPU or memory signal VPA is also tuning.
 - **Autopilot:** you manage no node pools. Billing follows Pod **requests**, missing requests get defaults, and out-of-range requests are adjusted.
@@ -77,14 +77,14 @@ Tied for the largest domain on the ACE exam. It covers day-2 operations on compu
   - Trap: moving frequently read data cold raises cost through retrieval fees and the 30/90/365-day minimums. Unknown patterns → **Autoclass**.
 - **Query tool per service:**
 
-| Service | Tool |
-|---|---|
-| Cloud SQL | `gcloud sql connect` or the Cloud SQL Auth Proxy |
-| AlloyDB | `psql` via the AlloyDB Auth Proxy, or AlloyDB Studio |
-| BigQuery | `bq query --use_legacy_sql=false`; `--dry_run` shows bytes scanned for free |
-| Spanner | `gcloud spanner databases execute-sql` or Spanner Studio |
-| Bigtable | `cbt` or client libraries (no native SQL) |
-| Firestore | Client libraries or the console query builder |
+| Service   | Tool                                                                        |
+| --------- | --------------------------------------------------------------------------- |
+| Cloud SQL | `gcloud sql connect` or the Cloud SQL Auth Proxy                            |
+| AlloyDB   | `psql` via the AlloyDB Auth Proxy, or AlloyDB Studio                        |
+| BigQuery  | `bq query --use_legacy_sql=false`; `--dry_run` shows bytes scanned for free |
+| Spanner   | `gcloud spanner databases execute-sql` or Spanner Studio                    |
+| Bigtable  | `cbt` or client libraries (no native SQL)                                   |
+| Firestore | Client libraries or the console query builder                               |
 
 - **Costs:**
   - Planning → pricing calculator. Existing spend → billing reports or the BigQuery export.
@@ -166,12 +166,12 @@ Tied for the largest domain on the ACE exam. It covers day-2 operations on compu
   - Log-based **counter** or **distribution** metrics need no code, but only count logs that arrive after the metric is created.
 - **Audit logs:**
 
-| Type | Default |
-|---|---|
-| Admin Activity (config changes) | Always on, free, can't be disabled |
-| Data Access (reads, user data) | Off except BigQuery; enable per service; charged |
-| System Event (Google actions) | Always on, free |
-| Policy Denied (blocked by policy) | On, charged |
+| Type                              | Default                                          |
+| --------------------------------- | ------------------------------------------------ |
+| Admin Activity (config changes)   | Always on, free, can't be disabled               |
+| Data Access (reads, user data)    | Off except BigQuery; enable per service; charged |
+| System Event (Google actions)     | Always on, free                                  |
+| Policy Denied (blocked by policy) | On, charged                                      |
 
 - **VPC Flow Logs**: per subnet, sampled. **Firewall logging**: per rule.
 - **Buckets and routing:**
